@@ -204,18 +204,6 @@ async function loadSlangs() {
         renderContent();
         slangList.style.height = `auto`;
     };
-
-    // let response = await fetch(chekingOffers ? '/api/getOffers' : '/api/get');
-    // renderLoading()
-    // if (response.ok) {
-    //     let json = await response.json();
-    //     data = json.data;
-    //     renderContent();
-    //     slangList.style.height = `auto`;
-    // } else {
-    //     alert("Ошибка HTTP: " + response.status);
-    //     slangList.style.height = `auto`;
-    // }
 }
 
 function renderRoot() {
