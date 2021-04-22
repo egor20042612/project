@@ -196,7 +196,7 @@ async function loadSlangs() {
         slangList.style.height = `${slangList.offsetHeight}px`;
     }
     
-    let response = await fetch(chekingOffers ? 'https://mapshack.herokuapp.com/api/getOffers' : 'https://mapshack.herokuapp.com/api/get');
+    let response = await fetch(chekingOffers ? 'https://project22111.herokuapp.com/api/getOffers' : 'https://project22111.herokuapp.com/api/get');
     renderLoading()
     if (response.ok) {
         let json = await response.json();
