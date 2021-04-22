@@ -43,22 +43,22 @@ function changeCategory(state) {
 function renderSlangList() {
     document.getElementById('slangList').innerHTML = '';
     let search = document.getElementById('searchInput').value;
-    let outData = search !== '' ? data.filter(item => item['name'].toUpperCase().indexOf(search.toUpperCase()) !== -1) : data;
+    let outData = search !== '' ? data.filter(item => item.name.toUpperCase().indexOf(search.toUpperCase()) !== -1) : data;
     if(outData != '') {
         outData.map((item) => html("slangList", "beforeend", `
             <div class="col-xl-4 col-md-6 col-12" style="padding: 5px">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">${item['name']}</h5>
-                        <p class="card-text">${item['description'].replace(/\\n/g, '<br>')}</p>
+                        <h5 class="card-title">${item.name}</h5>
+                        <p class="card-text">${item.description.replace(/\\n/g, '<br>')}</p>
                         ${ adminMode ? `<div class="row">
                             <div class="${chekingOffers ? 'col-xl-6 col-12' : 'col-12'}" style="margin-bottom: 15px;">
-                                <button style="width: 100%" class="button-clear button-clear--red" onClick="deleteSlang('${item['id']}')">
+                                <button style="width: 100%" class="button-clear button-clear--red" onClick="deleteSlang('${item.id}')">
                                         <svg version="1.1" id="Слой_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"viewBox="0 0 25 25" style="height: 25px;margin-top: 6px;" xml:space="preserve"><path id="path1468" fill="currentColor" d="M4,0c-0.1,0-0.3,0.1-0.4,0.2L0.2,3.6c-0.3,0.3-0.3,0.8,0,1.1L8,12.5l-7.8,7.8c-0.3,0.3-0.3,0.8,0,1.1l3.3,3.3c0.3,0.3,0.8,0.3,1.1,0l7.8-7.8l7.8,7.8c0.3,0.3,0.8,0.3,1.1,0l3.3-3.3c0.3-0.3,0.3-0.8,0-1.1L17,12.5l7.8-7.8c0.3-0.3,0.3-0.8,0-1.1l-3.3-3.3c-0.3-0.3-0.8-0.3-1.1,0L12.5,8L4.7,0.3C4.5,0,4.2,0,4,0z"/></svg>
                                 </button>
                             </div>
                             ${chekingOffers ? `<div class="col-xl-6 col-12">
-                                <button style="width: 100%" class="button-clear button-clear--green" onClick="postSlang('${item['id']}')">
+                                <button style="width: 100%" class="button-clear button-clear--green" onClick="postSlang('${item.id}')">
                                         <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"viewBox="0 0 25 25" style="height: 25px;margin-top: 6px;" xml:space="preserve"><g><path fill="currentColor" d="M21.1,2L9.4,13.7L3.9,8.2L0,12.1l9.4,9.4L25,5.9L21.1,2z"/></g></svg>
                                 </button>
                             </div>`
@@ -195,18 +195,27 @@ async function loadSlangs() {
     if(slangList) {
         slangList.style.height = `${slangList.offsetHeight}px`;
     }
-    
-    let response = await fetch(chekingOffers ? 'https://project22111.herokuapp.com/api/getOffers' : 'https://project22111.herokuapp.com/api/get');
-    renderLoading()
-    if (response.ok) {
-        let json = await response.json();
-        data = json.data;
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', chekingOffers ? '/api/getOffers' : '/api/get', true);
+    xhr.send();
+    xhr.onload = function () {
+        let json = xhr.response;
+        data = JSON.parse(json).data;
         renderContent();
         slangList.style.height = `auto`;
-    } else {
-        alert("Ошибка HTTP: " + response.status);
-        slangList.style.height = `auto`;
-    }
+    };
+
+    // let response = await fetch(chekingOffers ? '/api/getOffers' : '/api/get');
+    // renderLoading()
+    // if (response.ok) {
+    //     let json = await response.json();
+    //     data = json.data;
+    //     renderContent();
+    //     slangList.style.height = `auto`;
+    // } else {
+    //     alert("Ошибка HTTP: " + response.status);
+    //     slangList.style.height = `auto`;
+    // }
 }
 
 function renderRoot() {
