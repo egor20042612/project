@@ -4,12 +4,104 @@ var addingDescription;
 var adminMode = true;
 var chekingOffers = false;
 
+
 function html(element, pos, html) { document.getElementById(element).insertAdjacentHTML(pos, html) }
-function clearContent() {
-    document.getElementById("slangList").innerHTML = ""; 
-    if(!document.getElementById("search")) {return ''}
-    document.getElementById("search").remove();
-    document.getElementById("adminControl").remove();
+
+// Modal // Modal // Modal // Modal
+
+function showModal() {
+    let modal = document.getElementById("modal");
+    modal.style.display = "block";
+    modal.style.paddingRight = "17px";
+    modal.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
+    setTimeout(() => {  modal.setAttribute("class", "modal fade show"); }, 100);
+}
+function hideModal() {
+    let modal = document.getElementById("modal");
+    modal.setAttribute("class", "modal fade");
+    modal.style.paddingRight = "auto";
+    modal.style.backgroundColor = "rgba(0, 0, 0, 0)";
+    setTimeout(() => {  modal.style.display = "none"; }, 100);
+}
+function renderModal() {
+    html("root", "beforeBegin", 
+           `<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modal-label"></h5>
+                    <button type="button" class="close" onClick="hideModal()" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onClick="hideModal()">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>`
+    );
+}
+function changeModal(head) {
+    document.getElementById("modal-label").innerHTML = head;
+    // document.getElementById("modal-body").innerHTML = body;
+}
+
+// Requests // Requests // Requests
+
+function sendSlang() {
+    let name = document.getElementById('name').value;
+    let description = document.getElementById('description').value;
+    let validation = sendValidation(name, description);
+    if (validation === true) {
+        let button = document.getElementById('formSubmitButton');
+        button.setAttribute('disabled', true);
+        button.innerHTML = 'Отправка...';
+        showModal();
+        let toSend = {
+            name,
+            description
+        }
+        let xhr = new XMLHttpRequest()
+        xhr.open('POST', adminMode ? '/api/adminAdd' : '/api/userAdd', true)
+        xhr.send(JSON.stringify(toSend))
+        
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState != 4) return;
+            if (xhr.status != 200) {
+                button.removeAttribute('disabled')
+                button.innerHTML = adminMode ? 'Добавить' : 'Отправить';
+                changeModal('Что то пошло не так, попробуйте позже.');
+                showModal();
+            } else {
+                button.removeAttribute('disabled')
+                button.innerHTML = adminMode ? 'Добавить' : 'Отправить';
+                changeModal(adminMode ? 'Сленг добавлен!' : 'Мы получили ваше предложение.');
+                showModal();
+                document.getElementById('name').value = '';
+                document.getElementById('description').value = '';
+                loadSlangs()
+            }
+        }
+    } else {
+        renderValidationErrors(validation)
+    }
+}
+async function loadSlangs() {
+    let slangList = document.getElementById('slangList');
+    if(slangList) {
+        slangList.style.height = `${slangList.offsetHeight}px`;
+    }
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', chekingOffers ? '/api/getOffers' : '/api/get', true);
+    xhr.send();
+    xhr.onload = function () {
+        let json = xhr.response;
+        data = JSON.parse(json).data;
+        renderContent();
+        let slangList = document.getElementById('slangList');
+        slangList.style.height = `auto`;
+    };
 }
 function deleteSlang(id) {
     let xhr = new XMLHttpRequest();
@@ -35,10 +127,45 @@ function postSlang(id) {
         }
     }
 }
-function changeCategory(state) {
-    if (chekingOffers == state) { return '' }
-    chekingOffers = !chekingOffers;
-    loadSlangs()
+
+
+// Renders // Renders // Renders
+
+function renderValidationErrors(errors) {
+    document.getElementById('nameError').innerHTML = errors.name !== undefined ? errors.name : '';
+    document.getElementById('descriptionError').innerHTML = errors.description !== undefined ? errors.description : '';
+}
+function renderLoading() {
+    clearContent()
+    html("slangList", "beforeend", `
+        <div>
+            <img 
+                style="position: relative; width: 100%;" 
+                src="/static/loading.gif"
+            />
+        </div>
+    `);
+}
+function renderAdder() {
+    html('left-bar', 'afterbegin', `
+        <div style="padding: 10px" class="myCard">
+            <div class="card" style="padding: 10px">
+                <h4 style="text-decoration: underline;text-decoration-style: dashed;text-decoration-color: #329C9C;">${adminMode ? 'Добавить' : 'Предложить'} сленг</h4>
+                <div class="form-group">
+                    <label for="name">Сленг<span style="color: red">*</span></label>
+                    <input type="text" class="form-control" id="name" onInput="resetError('nameError')" placeholder="Введите сленг">
+                    <small id="nameError" style="color: red"></small>
+                </div>
+                <div class="form-group">
+                    <label for="description">Описание<span style="color: red">*</span></label>
+                    <textarea type="textarea" class="form-control" id="description" onInput="resetError('descriptionError')" placeholder="Введите описание"></textarea>
+                    <small id="descriptionError" style="color: red"></small>
+                </div>
+                <small style="text-align: end;"><span style="color: red">*</span> - обязательные поля</small>
+                <button onClick="sendSlang()" class="btn btn-primary" style="float: right" id="formSubmitButton">${adminMode ? 'Добавить' : 'Отправить'}</button>
+            </div>
+        </div>
+    `)
 }
 function renderSlangList() {
     document.getElementById('slangList').innerHTML = '';
@@ -98,116 +225,9 @@ function renderContent() {
     }
     renderSlangList();
 }
-
-function resetError(str) { document.getElementById(str).innerHTML = '' }
-
-function renderAdder() {
-    html('left-bar', 'afterbegin', `
-        <div style="padding: 10px" class="myCard">
-            <div class="card" style="padding: 10px">
-                <h4 style="text-decoration: underline;text-decoration-style: dashed;text-decoration-color: #329C9C;">${adminMode ? 'Добавить' : 'Предложить'} сленг</h4>
-                <div class="form-group">
-                    <label for="name">Сленг<span style="color: red">*</span></label>
-                    <input type="text" class="form-control" id="name" onInput="resetError('nameError')" placeholder="Введите сленг">
-                    <small id="nameError" style="color: red"></small>
-                </div>
-                <div class="form-group">
-                    <label for="description">Описание<span style="color: red">*</span></label>
-                    <textarea type="textarea" class="form-control" id="description" onInput="resetError('descriptionError')" placeholder="Введите описание"></textarea>
-                    <small id="descriptionError" style="color: red"></small>
-                </div>
-                <small style="text-align: end;"><span style="color: red">*</span> - обязательные поля</small>
-                <button onClick="sendSlang()" class="btn btn-primary" style="float: right" id="formSubmitButton">${adminMode ? 'Добавить' : 'Отправить'}</button>
-            </div>
-        </div>
-    `)
-}
-
-
-function renderLoading() {
-    clearContent()
-    html("slangList", "beforeend", `
-        <div>
-            <img 
-                style="position: relative; width: 100%;" 
-                src="/static/loading.gif"
-            />
-        </div>
-    `);
-}
-
-function sendValidation(name, desc) {
-    let error = {};
-    // NAME
-    if (name == '') { // lenght < 2 : ERROR
-        error.name = 'Обязательное поле.'
-    }
-
-    // DESCRIPTION
-    if (desc == '') {
-        error.description = 'Обязательное поле.'
-    }
-
-    // RESULT
-    if ((error.name === undefined) && (error.description === undefined)) {
-        error = true;
-    }
-    return error
-}
-function renderValidationErrors(errors) {
-    document.getElementById('nameError').innerHTML = errors.name !== undefined ? errors.name : '';
-    document.getElementById('descriptionError').innerHTML = errors.description !== undefined ? errors.description : '';
-}
-function sendSlang() {
-    let name = document.getElementById('name').value;
-    let description = document.getElementById('description').value;
-    let validation = sendValidation(name, description);
-    if (validation === true) {
-        let button = document.getElementById('formSubmitButton');
-        button.setAttribute('disabled', true);
-        button.innerHTML = 'Отправка...';
-        let toSend = {
-            name,
-            description
-        }
-        let xhr = new XMLHttpRequest()
-        xhr.open('POST', adminMode ? '/api/adminAdd' : '/api/userAdd', true)
-        xhr.send(JSON.stringify(toSend))
-        
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState != 4) return;
-            if (xhr.status != 200) {
-                button.removeAttribute('disabled')
-                button.innerHTML = adminMode ? 'Добавить' : 'Отправить';
-            } else {
-                button.removeAttribute('disabled')
-                button.innerHTML = adminMode ? 'Добавить' : 'Отправить';
-                loadSlangs()
-            }
-        }
-    } else {
-        renderValidationErrors(validation)
-    }
-}
-
-async function loadSlangs() {
-    let slangList = document.getElementById('slangList');
-    if(slangList) {
-        slangList.style.height = `${slangList.offsetHeight}px`;
-    }
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', chekingOffers ? '/api/getOffers' : '/api/get', true);
-    xhr.send();
-    xhr.onload = function () {
-        let json = xhr.response;
-        data = JSON.parse(json).data;
-        renderContent();
-        slangList.style.height = `auto`;
-    };
-}
-
 function renderRoot() {
     document.getElementById('root').innerHTML = '';
+    renderModal();
     html("root", "afterbegin", `
         <div class="row">
             <div class="col-12" style="margin-bottom: 15px;">
@@ -231,6 +251,38 @@ function renderRoot() {
     loadSlangs();
 }
 
+// OTHER // OTHER // OTHER
+
+function clearContent() {
+    document.getElementById("slangList").innerHTML = ""; 
+    if(!document.getElementById("search")) {return ''}
+    document.getElementById("search").remove();
+    if(adminMode) {document.getElementById("adminControl").remove();}
+}
+function changeCategory(state) {
+    if (chekingOffers == state) { return '' }
+    chekingOffers = !chekingOffers;
+    loadSlangs()
+}
+function resetError(str) { document.getElementById(str).innerHTML = '' }
+function sendValidation(name, desc) {
+    let error = {};
+    // NAME
+    if (name == '') { // lenght < 2 : ERROR
+        error.name = 'Обязательное поле.'
+    }
+
+    // DESCRIPTION
+    if (desc == '') {
+        error.description = 'Обязательное поле.'
+    }
+
+    // RESULT
+    if ((error.name === undefined) && (error.description === undefined)) {
+        error = true;
+    }
+    return error
+}
 function changeRole() {
     if(adminMode) {
         chekingOffers = false;
@@ -239,5 +291,7 @@ function changeRole() {
     document.getElementById('searchInput').value = '';
     renderRoot();
 }
+
+// CODE TO RUN
 
 renderRoot();
