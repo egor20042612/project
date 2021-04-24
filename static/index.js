@@ -33,7 +33,7 @@ function renderModal() {
                 <div class="modal-content">
                   <div class="modal-header" id="modal-header">
                     <h5 class="modal-title" id="modal-label"></h5>
-                    <button type="button" class="close" onClick="hideModal()" aria-label="Close">
+                    <button type="button" class="close button-without-effect" onClick="hideModal()" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
                   </div>
