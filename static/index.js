@@ -193,7 +193,7 @@ function renderSlangList() {
             html(`card-${item.id}`, 'beforeend', `
             <div class="row more">
                 ${document.getElementById(`card-${item.id}-text`).offsetHeight > 200 ? 
-                `<div class="col-12"><a href="#" class="card-link" onClick="onClickMore('${item.name}','${item.description.replace(/\\n/g, '<br>')}')">Читать всё...</a></div>` : ''}
+                `<div class="col-12"><a href="#" class="card-link" onClick="onClickMore('${item.name}','${item.description.replace(/\\n/g, '<br>')}')">Читать полностью...</a></div>` : ''}
                     ${ adminMode ? `
                         <div class="${chekingOffers ? 'col-xl-6 col-12' : 'col-12'}" style="margin-bottom: 15px;">
                             <button style="width: 100%" class="button-clear button-clear--red" onClick="deleteSlang('${item.id}')">
