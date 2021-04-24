@@ -1,7 +1,7 @@
 var data;
 var addingName;
 var addingDescription;
-var adminMode = true;
+var adminMode = false;
 var chekingOffers = false;
 
 
@@ -21,14 +21,17 @@ function hideModal() {
     modal.setAttribute("class", "modal fade");
     modal.style.paddingRight = "auto";
     modal.style.backgroundColor = "rgba(0, 0, 0, 0)";
-    setTimeout(() => {  modal.style.display = "none"; }, 100);
+    setTimeout(() => {
+        modal.style.display = "none";
+        if(document.getElementById("modal-body")) {document.getElementById("modal-body").remove();}
+}, 100);
 }
 function renderModal() {
     html("root", "beforeBegin", 
            `<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog" role="document">
                 <div class="modal-content">
-                  <div class="modal-header">
+                  <div class="modal-header" id="modal-header">
                     <h5 class="modal-title" id="modal-label"></h5>
                     <button type="button" class="close" onClick="hideModal()" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
@@ -42,9 +45,13 @@ function renderModal() {
             </div>`
     );
 }
-function changeModal(head) {
+function changeModal(head, body = '') {
     document.getElementById("modal-label").innerHTML = head;
-    // document.getElementById("modal-body").innerHTML = body;
+    if(body !== '') {html('modal-header', 'afterend', `
+        <div class="modal-body" id="modal-body">
+            ${body}
+        </div>
+    `);}
 }
 
 // Requests // Requests // Requests
@@ -172,29 +179,37 @@ function renderSlangList() {
     let search = document.getElementById('searchInput').value;
     let outData = search !== '' ? data.filter(item => item.name.toUpperCase().indexOf(search.toUpperCase()) !== -1) : data;
     if(outData != '') {
-        outData.map((item) => html("slangList", "beforeend", `
+        outData.map((item) => {html("slangList", "beforeend", `
             <div class="col-xl-4 col-md-6 col-12" style="padding: 5px">
-                <div class="card">
+                <div class="card" style="overflow: hidden; height: ${adminMode ? '300px' : '250px'}; position: relative;" id="card-${item.id}">
                     <div class="card-body">
                         <h5 class="card-title">${item.name}</h5>
-                        <p class="card-text">${item.description.replace(/\\n/g, '<br>')}</p>
-                        ${ adminMode ? `<div class="row">
-                            <div class="${chekingOffers ? 'col-xl-6 col-12' : 'col-12'}" style="margin-bottom: 15px;">
-                                <button style="width: 100%" class="button-clear button-clear--red" onClick="deleteSlang('${item.id}')">
-                                        <svg version="1.1" id="Слой_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"viewBox="0 0 25 25" style="height: 25px;margin-top: 6px;" xml:space="preserve"><path id="path1468" fill="currentColor" d="M4,0c-0.1,0-0.3,0.1-0.4,0.2L0.2,3.6c-0.3,0.3-0.3,0.8,0,1.1L8,12.5l-7.8,7.8c-0.3,0.3-0.3,0.8,0,1.1l3.3,3.3c0.3,0.3,0.8,0.3,1.1,0l7.8-7.8l7.8,7.8c0.3,0.3,0.8,0.3,1.1,0l3.3-3.3c0.3-0.3,0.3-0.8,0-1.1L17,12.5l7.8-7.8c0.3-0.3,0.3-0.8,0-1.1l-3.3-3.3c-0.3-0.3-0.8-0.3-1.1,0L12.5,8L4.7,0.3C4.5,0,4.2,0,4,0z"/></svg>
-                                </button>
-                            </div>
-                            ${chekingOffers ? `<div class="col-xl-6 col-12">
-                                <button style="width: 100%" class="button-clear button-clear--green" onClick="postSlang('${item.id}')">
-                                        <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"viewBox="0 0 25 25" style="height: 25px;margin-top: 6px;" xml:space="preserve"><g><path fill="currentColor" d="M21.1,2L9.4,13.7L3.9,8.2L0,12.1l9.4,9.4L25,5.9L21.1,2z"/></g></svg>
-                                </button>
-                            </div>`
-                            : ''}
-                        </div>` : ''}
+                        <p class="card-text" id="card-${item.id}-text">${item.description.replace(/\\n/g, '<br>')}</p>
                     </div>
                 </div>
             </div>
-        `));
+        `);
+        if((adminMode) || (document.getElementById(`card-${item.id}-text`).offsetHeight > 200)) {
+            html(`card-${item.id}`, 'beforeend', `
+            <div class="row more">
+                ${document.getElementById(`card-${item.id}-text`).offsetHeight > 200 ? 
+                `<div class="col-12"><a href="#" class="card-link" onClick="onClickMore('${item.name}','${item.description.replace(/\\n/g, '<br>')}')">Читать всё...</a></div>` : ''}
+                    ${ adminMode ? `
+                        <div class="${chekingOffers ? 'col-xl-6 col-12' : 'col-12'}" style="margin-bottom: 15px;">
+                            <button style="width: 100%" class="button-clear button-clear--red" onClick="deleteSlang('${item.id}')">
+                                    <svg version="1.1" id="Слой_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"viewBox="0 0 25 25" style="height: 25px;margin-top: 6px;" xml:space="preserve"><path id="path1468" fill="currentColor" d="M4,0c-0.1,0-0.3,0.1-0.4,0.2L0.2,3.6c-0.3,0.3-0.3,0.8,0,1.1L8,12.5l-7.8,7.8c-0.3,0.3-0.3,0.8,0,1.1l3.3,3.3c0.3,0.3,0.8,0.3,1.1,0l7.8-7.8l7.8,7.8c0.3,0.3,0.8,0.3,1.1,0l3.3-3.3c0.3-0.3,0.3-0.8,0-1.1L17,12.5l7.8-7.8c0.3-0.3,0.3-0.8,0-1.1l-3.3-3.3c-0.3-0.3-0.8-0.3-1.1,0L12.5,8L4.7,0.3C4.5,0,4.2,0,4,0z"/></svg>
+                            </button>
+                        </div>
+                        ${chekingOffers ? `<div class="col-xl-6 col-12">
+                            <button style="width: 100%" class="button-clear button-clear--green" onClick="postSlang('${item.id}')">
+                                    <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"viewBox="0 0 25 25" style="height: 25px;margin-top: 6px;" xml:space="preserve"><g><path fill="currentColor" d="M21.1,2L9.4,13.7L3.9,8.2L0,12.1l9.4,9.4L25,5.9L21.1,2z"/></g></svg>
+                            </button>
+                        </div>`
+                    : ''}
+                ` : ''}
+            </div>
+        `)};
+        })
     } else {
         html("slangList", "beforeend", `<div class="container-fluid" style="font-size: 40px;color: rgba(0, 0, 0, 0.3);text-align: center;">${search !== '' ? 'По такому запросу ничего не найдено.' : 'Этот список пуст...'}</div>`)
     }
@@ -290,6 +305,10 @@ function changeRole() {
     adminMode = !adminMode;
     document.getElementById('searchInput').value = '';
     renderRoot();
+}
+function onClickMore(name, body) {
+    changeModal(name, body);
+    showModal();
 }
 
 // CODE TO RUN
