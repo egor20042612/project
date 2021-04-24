@@ -38,7 +38,7 @@ function renderModal() {
                     </button>
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onClick="hideModal()">Close</button>
+                    <button type="button" class="btn btn-secondary" onClick="hideModal()">Закрыть</button>
                   </div>
                 </div>
               </div>
