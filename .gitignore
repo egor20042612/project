@@ -60,6 +60,8 @@ db.sqlite3
 # Flask stuff:
 instance/
 .webassets-cache
+database.db
+database.sqlite
 
 # Scrapy stuff:
 .scrapy
@@ -112,5 +114,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-.database.db
-.database.sqlite
