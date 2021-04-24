@@ -26,25 +26,6 @@ function hideModal() {
         if(document.getElementById("modal-body")) {document.getElementById("modal-body").remove();}
 }, 100);
 }
-function renderModal() {
-    html("root", "beforeBegin", 
-           `<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                  <div class="modal-header" id="modal-header">
-                    <h5 class="modal-title" id="modal-label"></h5>
-                    <button type="button" class="close button-without-effect" onClick="hideModal()" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onClick="hideModal()">Закрыть</button>
-                  </div>
-                </div>
-              </div>
-            </div>`
-    );
-}
 function changeModal(head, body = '') {
     document.getElementById("modal-label").innerHTML = head;
     if(body !== '') {html('modal-header', 'afterend', `
@@ -242,7 +223,6 @@ function renderContent() {
 }
 function renderRoot() {
     document.getElementById('root').innerHTML = '';
-    renderModal();
     html("root", "afterbegin", `
         <div class="row">
             <div class="col-12" style="margin-bottom: 15px;">
