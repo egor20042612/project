@@ -172,7 +172,7 @@ function renderSlangList() {
         `);
         if((adminMode) || (document.getElementById(`card-${item.id}-text`).offsetHeight > 200)) {
             html(`card-${item.id}`, 'beforeend', `
-            <div class="row more">
+            <div class="row more" ${document.getElementById(`card-${item.id}-text`).offsetHeight > 200 ? 'style="padding-top: 0";'}>
                 ${document.getElementById(`card-${item.id}-text`).offsetHeight > 200 ? 
                 `<div class="col-12"><a href="#" class="card-link" onClick="onClickMore('${item.name}','${item.description.replace(/\\n/g, '<br>')}')">Читать полностью...</a></div>` : ''}
                     ${ adminMode ? `
