@@ -38,7 +38,8 @@ function changeModal(head, body = '') {
 // Requests // Requests // Requests
 
 function sendSlang() {
-    let name = document.getElementById('name').value;
+    if(document.getElementById('passtoforadmin').value == '5511') {
+        let name = document.getElementById('name').value;
     let description = document.getElementById('description').value;
     let validation = sendValidation(name, description);
     if (validation === true) {
@@ -73,6 +74,7 @@ function sendSlang() {
         }
     } else {
         renderValidationErrors(validation)
+    }
     }
 }
 async function loadSlangs() {
@@ -172,11 +174,11 @@ function renderSlangList() {
         `);
         if((adminMode) || (document.getElementById(`card-${item.id}-text`).offsetHeight > 200)) {
             html(`card-${item.id}`, 'beforeend', `
-            <div class="row more" ${document.getElementById(`card-${item.id}-text`).offsetHeight > 200 ? 'style="padding-top: 0";'}>
+            <div class="row more" ${document.getElementById(`card-${item.id}-text`).offsetHeight > 200 ? 'style="padding-top: 0; background-color: rgba(0,0,0,0)";' : ''}>
                 ${document.getElementById(`card-${item.id}-text`).offsetHeight > 200 ? 
-                `<div class="col-12"><a href="#" class="card-link" onClick="onClickMore('${item.name}','${item.description.replace(/\\n/g, '<br>')}')">Читать полностью...</a></div>` : ''}
+                `<div class="col-12" style="pointer-events: all;"><a href="#" class="card-link" onClick="onClickMore('${item.name}','${item.description.replace(/\\n/g, '<br>')}')">Читать полностью...</a></div>` : ''}
                     ${ adminMode ? `
-                        <div class="${chekingOffers ? 'col-xl-6 col-12' : 'col-12'}" style="margin-bottom: 15px;">
+                        <div class="${chekingOffers ? 'col-xl-6 col-12' : 'col-12'}" style="margin-bottom: 15px;pointer-events: all;">
                             <button style="width: 100%" class="button-clear button-clear--red" onClick="deleteSlang('${item.id}')">
                                     <svg version="1.1" id="Слой_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"viewBox="0 0 25 25" style="height: 25px;margin-top: 6px;" xml:space="preserve"><path id="path1468" fill="currentColor" d="M4,0c-0.1,0-0.3,0.1-0.4,0.2L0.2,3.6c-0.3,0.3-0.3,0.8,0,1.1L8,12.5l-7.8,7.8c-0.3,0.3-0.3,0.8,0,1.1l3.3,3.3c0.3,0.3,0.8,0.3,1.1,0l7.8-7.8l7.8,7.8c0.3,0.3,0.8,0.3,1.1,0l3.3-3.3c0.3-0.3,0.3-0.8,0-1.1L17,12.5l7.8-7.8c0.3-0.3,0.3-0.8,0-1.1l-3.3-3.3c-0.3-0.3-0.8-0.3-1.1,0L12.5,8L4.7,0.3C4.5,0,4.2,0,4,0z"/></svg>
                             </button>
@@ -227,7 +229,7 @@ function renderRoot() {
         <div class="row">
             <div class="col-12" style="margin-bottom: 15px;">
                 <div class="card myCard" style="padding: 10px; flex-direction: row;">
-                    <div>Словарь СЛЕНГА</div>
+                    <input id="passtoforadmin" type="password" />
                     <a href="#" style="margin-left: auto;align-self: flex-end;" class="card-link" onClick="changeRole()" >${adminMode ? 'switch to user' : 'switch to admin'}</a>
                 </div>
             </div>
@@ -279,12 +281,14 @@ function sendValidation(name, desc) {
     return error
 }
 function changeRole() {
-    if(adminMode) {
-        chekingOffers = false;
+    if(document.getElementById('passtoforadmin').value == '5511') {
+        if(adminMode) {
+            chekingOffers = false;
+        }
+        adminMode = !adminMode;
+        document.getElementById('searchInput').value = '';
+        renderRoot();
     }
-    adminMode = !adminMode;
-    document.getElementById('searchInput').value = '';
-    renderRoot();
 }
 function onClickMore(name, body) {
     changeModal(name, body);
