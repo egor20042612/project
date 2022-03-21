@@ -1,4 +1,4 @@
- var data;
+var data;
 var addingName;
 var addingDescription;
 var adminMode = false;
